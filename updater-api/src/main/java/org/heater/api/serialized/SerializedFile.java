@@ -13,5 +13,6 @@ import java.io.Serializable;
 @RequiredArgsConstructor
 public final class SerializedFile implements Serializable {
     private final String path;
+    private final String checksum;
     private final long length;
 }
