@@ -4,7 +4,16 @@ import java.util.Locale;
 
 public final class OsCheck {
     public enum OSType {
-        Windows, MacOS, Linux, Other, All
+        Windows("windows"), MacOS("mac"), Linux("linux"), Other("other"), All("all");
+
+        private String name;
+        private OSType(String name) {
+            this.name = name;
+        }
+
+        public final String toString() {
+            return name;
+        }
     }
 
     protected static OSType detectedOS;
