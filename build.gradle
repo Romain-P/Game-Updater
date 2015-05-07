@@ -1,0 +1,22 @@
+allProject {
+    apply plugin: 'java'
+    apply plugin: 'idea'
+
+    sourceCompatibility = 1.7
+    version = '0.1'
+
+    ext.lombok = '1.14.0'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        provided "org.projectlombok:lombok:$lombok"
+        testCompile group: 'junit', name: 'junit', version: '4.11'
+    }
+
+    compileJava {
+        options.encoding = 'UTF-8'
+    }
+}
