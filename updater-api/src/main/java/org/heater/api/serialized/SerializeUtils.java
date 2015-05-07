@@ -1,7 +1,7 @@
-package org.heater.api.utils;
+package org.heater.api.serialized;
 
 import lombok.SneakyThrows;
-import org.heater.api.serialized.SerializedFile;
+import org.heater.api.utils.OsCheck;
 
 import java.io.*;
 import java.net.URL;
