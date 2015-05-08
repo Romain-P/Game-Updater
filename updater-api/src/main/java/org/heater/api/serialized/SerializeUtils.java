@@ -11,6 +11,7 @@ import java.util.Map;
  * Created by romain on 07/05/2015.
  */
 public class SerializeUtils {
+    @SuppressWarnings("unchecked")
     public static Map<OsCheck.OSType, SerializedFile> getFiles(InputStream stream) {
         ObjectInputStream object = null;
 
