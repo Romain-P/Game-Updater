@@ -4,7 +4,7 @@ import java.util.Locale;
 
 public final class OsCheck {
     public enum OSType {
-        WINDOWS, MAC, LINUX, Other, ALL;
+        WINDOWS, MAC, LINUX, ALL;
 
         public String toString() {
             return this.name().toLowerCase();
@@ -22,8 +22,6 @@ public final class OsCheck {
                 detectedOS = OSType.WINDOWS;
             } else if (os.indexOf("nux") >= 0) {
                 detectedOS = OSType.LINUX;
-            } else {
-                detectedOS = OSType.Other;
             }
         }
         return detectedOS;
