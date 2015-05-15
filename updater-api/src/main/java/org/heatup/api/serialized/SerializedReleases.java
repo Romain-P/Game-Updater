@@ -1,7 +1,7 @@
-package org.heater.api.serialized;
+package org.heatup.api.serialized;
 
 import lombok.RequiredArgsConstructor;
-import org.heater.api.utils.OsCheck;
+import org.heatup.api.utils.OsCheck;
 
 import java.io.Serializable;
 

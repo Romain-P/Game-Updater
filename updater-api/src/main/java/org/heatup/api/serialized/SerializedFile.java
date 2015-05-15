@@ -1,8 +1,8 @@
-package org.heater.api.serialized;
+package org.heatup.api.serialized;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.heater.api.utils.FileUtils;
+import org.heatup.api.utils.FileUtils;
 
 import java.io.File;
 import java.io.Serializable;

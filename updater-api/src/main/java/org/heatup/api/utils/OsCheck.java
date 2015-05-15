@@ -1,4 +1,4 @@
-package org.heater.api.utils;
+package org.heatup.api.utils;
 
 import java.util.Locale;
 

@@ -4,11 +4,11 @@ import lombok.SneakyThrows;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.util.Zip4jConstants;
-import org.heater.api.serialized.SerializeUtils;
-import org.heater.api.serialized.SerializedFile;
-import org.heater.api.serialized.SerializedReleases;
-import org.heater.api.utils.FileUtils;
-import org.heater.api.utils.OsCheck;
+import org.heatup.api.serialized.SerializeUtils;
+import org.heatup.api.serialized.SerializedFile;
+import org.heatup.api.serialized.SerializedReleases;
+import org.heatup.api.utils.FileUtils;
+import org.heatup.api.utils.OsCheck;
 
 import java.io.File;
 import java.util.ArrayList;
