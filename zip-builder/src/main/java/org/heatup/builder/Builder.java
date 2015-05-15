@@ -89,6 +89,8 @@ public class Builder {
             OsCheck.OSType os = entry.getKey();
             int release = doubloon.getRelease();
 
+            if(release == -1) continue; //added file
+
             Map<Integer, ZipFile> map = old.get(os);
 
             if(map == null) {

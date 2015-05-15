@@ -9,7 +9,7 @@ import java.util.Scanner;
  */
 @RequiredArgsConstructor
 public class ConsoleAnalyzer {
-    private final Main builder;
+    private final Builder builder;
     private final Scanner console;
 
     Runnable runnable = new Runnable() {
