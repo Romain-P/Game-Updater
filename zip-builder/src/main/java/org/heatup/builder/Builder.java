@@ -174,13 +174,7 @@ public class Builder {
                         addNewFile(SerializedFile.resolve(file, -1), os);
                     } else {
                         if (Checksum.get(file) == newFile.getChecksum()) {
-                            if (os == OsCheck.OSType.ALL) {
-                                for (OsCheck.OSType type : OsCheck.OSType.values())
-                                    if (type != OsCheck.OSType.ALL)
-                                        addNewFile(newFile, type);
-                            } else {
-                                addNewFile(newFile, os);
-                            }
+                            addNewFile(newFile, os);
                         }
                     }
                 }
@@ -189,6 +183,13 @@ public class Builder {
     }
 
     private void addNewFile(SerializedFile file, OsCheck.OSType os) {
+        if(os == OsCheck.OSType.ALL) {
+            for (OsCheck.OSType type : OsCheck.OSType.values())
+                if (type != OsCheck.OSType.ALL)
+                    addNewFile(file, type);
+            return;
+        }
+
         List<SerializedFile> list = newFiles.get(os);
 
         if(list == null) {
