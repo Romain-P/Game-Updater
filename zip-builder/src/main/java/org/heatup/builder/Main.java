@@ -6,11 +6,13 @@ import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.util.Zip4jConstants;
 import org.heater.api.serialized.SerializeUtils;
 import org.heater.api.serialized.SerializedFile;
-import org.heater.api.utils.FileUtils;
 import org.heater.api.utils.OsCheck;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 
 /**
  * Created by romain on 07/05/2015.
@@ -28,29 +30,6 @@ public class Main {
         Map<OsCheck.OSType, SerializedFile> toRebuildFiles = SerializeUtils.getFiles("files"+slash+"files.dat"),
                                             newFiles = new HashMap<>();
 
-        //check new files
-        for(OsCheck.OSType os: OsCheck.OSType.values())
-        {
-            File filesFolder = new File("files"+slash+os.toString());
-            File[] list = filesFolder.listFiles();
-
-            if(list != null)
-            {
-                for (File file : list)
-                {
-                    SerializedFile newFile = null;
-
-                    for (SerializedFile srf : toRebuildFiles.values())
-                        if (srf.getPath().equals(file.getPath()))
-                            newFile = srf;
-
-                    if (newFile == null) continue; //TODO: removed files
-
-                    if (FileUtils.getCheckSum(file).equalsIgnoreCase(newFile.getChecksum()))
-                        newFiles.put(os, newFile);
-                }
-            }
-        }
 
         Map<OsCheck.OSType, Map<Integer, ZipFile>> oldZips = new HashMap<>();
         Map<OsCheck.OSType, ZipFile> newZips = new HashMap<>();
@@ -61,16 +40,6 @@ public class Main {
             SerializedFile doubloon = entry.getValue();
             OsCheck.OSType os = entry.getKey();
             int release = doubloon.getRelease();
-
-            /** REMOVE **/
-            Map<Integer, ZipFile> map = oldZips.get(os);
-
-            if(map == null) {
-                map = oldZips.put(os, new HashMap<Integer, ZipFile>());
-                map.put(release, zipFile(release, os.toString()));
-            }
-
-            map.get(release).removeFile(doubloon.getPath());
 
             /** ADD TO NEW ZIPS**/
             ZipFile zip = newZips.get(os);

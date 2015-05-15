@@ -14,7 +14,7 @@ public class ConsoleAnalyzer {
 
     Runnable runnable = new Runnable() {
         public void run() {
-            String command = null;
+            String command;
 
             System.out.println("Write the 'build' command to analyze & rebuild releases");
 
