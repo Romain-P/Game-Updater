@@ -1,4 +1,8 @@
+apply plugin: 'application'
+mainClassName = "org.heatup.builder.Main"
+
 dependencies {
     compile project(":updater-api")
     compile "net.lingala.zip4j:zip4j:$zip4j"
+    compile "com.google.guava:guava:$guava"
 }

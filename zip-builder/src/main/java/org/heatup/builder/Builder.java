@@ -4,10 +4,7 @@ import lombok.SneakyThrows;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.util.Zip4jConstants;
-import org.heatup.api.serialized.SerializeUtils;
-import org.heatup.api.serialized.SerializedFile;
 import org.heatup.api.serialized.SerializedReleases;
-import org.heatup.api.utils.FileUtils;
 import org.heatup.api.utils.OsCheck;
 
 import java.io.File;
@@ -76,13 +73,18 @@ public class Builder {
         params.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
         params.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_ULTRA);
 
-        for(Map.Entry<OsCheck.OSType, Release> entry: releases.entrySet()) {
-            Release release = entry.getValue();
-            OsCheck.OSType os = entry.getKey();
+        try {
+            for (Map.Entry<OsCheck.OSType, Release> entry : releases.entrySet()) {
+                Release release = entry.getValue();
+                OsCheck.OSType os = entry.getKey();
 
-            ZipFile zip = new ZipFile(path(os.toString(), String.valueOf(release.getRelease())));
+                ZipFile zip = new ZipFile(path("releases", os.toString(), release.getRelease()+".zip"));
 
-            zip.createZipFile(release.getFiles(), params);
+                zip.createZipFile(release.getFiles(), params);
+            }
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+            System.exit(1);
         }
     }
 
@@ -93,9 +95,10 @@ public class Builder {
 
             Release release = releases.get(os);
 
-            if(release == null)
-                release = releases.put(os,
-                        new Release(calculateNewRelease(os), new ArrayList<File>()));
+            if(release == null) {
+                release = new Release(calculateNewRelease(os), new ArrayList<File>());
+                releases.put(os, release);
+            }
 
             for(SerializedFile doubloon: doubloons)
                 release.getFiles().add(new File(doubloon.getPath()));
@@ -130,7 +133,8 @@ public class Builder {
                 Map<Integer, ZipFile> map = old.get(os);
 
                 if (map == null) {
-                    map = old.put(os, new HashMap<Integer, ZipFile>());
+                    map = new HashMap<>();
+                    old.put(os, map);
                     map.put(release, zipFile(release, os.toString()));
                 }
 
@@ -166,33 +170,33 @@ public class Builder {
                             if (srf.getPath().equals(file.getPath()))
                                 newFile = srf;
 
-                    List<SerializedFile> l = newFiles.get(os);
-
                     if (newFile == null) {
-                        //release -1 (=) new file
-                        if(l == null)
-                            l = newFiles.put(os, new ArrayList<SerializedFile>());
-
-                        l.add(SerializedFile.resolve(file, -1));
+                        addNewFile(SerializedFile.resolve(file, -1), os);
                     } else {
-                        if (FileUtils.getCheckSum(file).equalsIgnoreCase(newFile.getChecksum()))
+                        if (Checksum.get(file) == newFile.getChecksum()) {
                             if (os == OsCheck.OSType.ALL) {
                                 for (OsCheck.OSType type : OsCheck.OSType.values())
-                                    if (type != OsCheck.OSType.ALL) {
-                                        if(l == null)
-                                            l = newFiles.put(type, new ArrayList<SerializedFile>());
-
-                                        l.add(newFile);
-                                    }
+                                    if (type != OsCheck.OSType.ALL)
+                                        addNewFile(newFile, type);
                             } else {
-                                if(l == null)
-                                    l = newFiles.put(os, new ArrayList<SerializedFile>());
-                                l.add(newFile);
+                                addNewFile(newFile, os);
                             }
+                        }
                     }
                 }
             }
         }
+    }
+
+    private void addNewFile(SerializedFile file, OsCheck.OSType os) {
+        List<SerializedFile> list = newFiles.get(os);
+
+        if(list == null) {
+            list = new ArrayList<>();
+            newFiles.put(os, list);
+        }
+
+        list.add(file);
     }
 
     private String path(String... files) {
@@ -203,5 +207,9 @@ public class Builder {
             builder.append(separator).append(file);
 
         return builder.toString().substring(separator.length());
+    }
+
+    private void d(String s) {
+        System.out.println(s);
     }
 }
