@@ -1,108 +1,71 @@
 package org.heatup.builder;
 
-import lombok.SneakyThrows;
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.model.ZipParameters;
-import net.lingala.zip4j.util.Zip4jConstants;
 import org.heater.api.serialized.SerializeUtils;
 import org.heater.api.serialized.SerializedFile;
 import org.heater.api.utils.FileUtils;
 import org.heater.api.utils.OsCheck;
 
 import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Created by romain on 07/05/2015.
+ * Created by romain on 11/05/2015.
  */
 public class Builder {
-    public static void main(String[] args) {
-        new ConsoleAnalyzer(new Builder(), new Scanner(System.in));
+    private final Map<OsCheck.OSType, SerializedFile> newFiles;
+
+    public Builder() {
+        this.newFiles = new HashMap<>();
     }
 
-    public static final String slash = File.separator;
-
-    @SneakyThrows
-    @SuppressWarnings("unchecked")
     public void build() {
-        Map<OsCheck.OSType, SerializedFile> toRebuildFiles = SerializeUtils.getFiles("files"+slash+"files.dat"),
-                                            newFiles = new HashMap<>();
+        System.out.println("Finding updated files...");
+        findNewFiles();
 
-        //check new files
-        for(OsCheck.OSType os: OsCheck.OSType.values())
-        {
-            File filesFolder = new File("files"+slash+os.toString());
+
+    }
+
+    private void findNewFiles() {
+        for(OsCheck.OSType os: OsCheck.OSType.values()) {
+            File filesFolder = new File(path("files", os.toString()));
             File[] list = filesFolder.listFiles();
 
-            if(list != null)
-            {
-                for (File file : list)
-                {
+            if(list != null) {
+                for (File file : list) {
                     SerializedFile newFile = null;
 
-                    for (SerializedFile srf : toRebuildFiles.values())
+                    Map<OsCheck.OSType, SerializedFile> lastFiles =
+                            SerializeUtils.getFiles(path("files", "files.dat"));
+
+                    for (SerializedFile srf : lastFiles.values())
                         if (srf.getPath().equals(file.getPath()))
                             newFile = srf;
 
-                    if (newFile == null) continue; //TODO: removed files
-
-                    if (FileUtils.getCheckSum(file).equalsIgnoreCase(newFile.getChecksum()))
-                        newFiles.put(os, newFile);
+                    if (newFile == null) {
+                        //release -1 (=) new file
+                        newFiles.put(os, SerializedFile.resolve(file, -1));
+                    } else {
+                        if (FileUtils.getCheckSum(file).equalsIgnoreCase(newFile.getChecksum()))
+                            if (os == OsCheck.OSType.ALL) {
+                                for (OsCheck.OSType type : OsCheck.OSType.values())
+                                    if (type != OsCheck.OSType.ALL)
+                                        newFiles.put(type, newFile);
+                            } else
+                                newFiles.put(os, newFile);
+                    }
                 }
             }
-        }
-
-        Map<OsCheck.OSType, Map<Integer, ZipFile>> oldZips = new HashMap<>();
-        Map<OsCheck.OSType, ZipFile> newZips = new HashMap<>();
-
-        //compare with old releases & remove files
-        for(Map.Entry<OsCheck.OSType, SerializedFile> entry: newFiles.entrySet())
-        {
-            SerializedFile doubloon = entry.getValue();
-            OsCheck.OSType os = entry.getKey();
-            int release = doubloon.getRelease();
-
-            /** REMOVE **/
-            Map<Integer, ZipFile> map = oldZips.get(os);
-
-            if(map == null) {
-                map = oldZips.put(os, new HashMap<Integer, ZipFile>());
-                map.put(release, zipFile(release, os.toString()));
-            }
-
-            map.get(release).removeFile(doubloon.getPath());
-
-            /** ADD TO NEW ZIPS**/
-            ZipFile zip = newZips.get(os);
-
-
-            ZipParameters params = new ZipParameters();
-            params.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
-            params.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_ULTRA);
-
-            if(zip == null) {
-                int newRelease = 1;
-
-                for (int i = 1; true; i++) {
-                    File file = new File(String.format("releases%s%s%s%d.zip", slash, os, slash, i));
-                    if(file.exists())
-                        newRelease = i+1;
-                    else break;
-                }
-
-                zip = newZips.put(os,
-                        new ZipFile(String.format("releases%s%s%s%d.zip", slash, os, slash, newRelease)));
-
-                zip.createZipFile(new ArrayList(), new ZipParameters());
-            }
-
-            zip.addFile(new File(doubloon.getPath()), params);
         }
     }
 
-    @SneakyThrows
-    private ZipFile zipFile(int release, String os) {
-        return new ZipFile(
-                new File(String.format("releases%s%s%s%d.zip", slash, os, slash, release)));
+    private String path(String... files) {
+        String separator = File.separator;
+        StringBuilder builder = new StringBuilder();
+
+        for(String file: files)
+            builder.append(separator).append(file);
+
+        return builder.toString().substring(separator.length());
     }
 }

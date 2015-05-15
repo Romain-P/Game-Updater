@@ -2,7 +2,9 @@ package org.heater.api.serialized;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.heater.api.utils.FileUtils;
 
+import java.io.File;
 import java.io.Serializable;
 
 /**
@@ -16,4 +18,12 @@ public final class SerializedFile implements Serializable {
     private final int release;
     private final String checksum;
     private final long length;
+
+    public static SerializedFile resolve(File file, int release) {
+        return new SerializedFile(
+                file.getPath(),
+                release,
+                FileUtils.getCheckSum(file),
+                file.length());
+    }
 }
