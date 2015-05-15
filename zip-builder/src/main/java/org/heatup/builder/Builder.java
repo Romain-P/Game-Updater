@@ -6,19 +6,22 @@ import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.util.Zip4jConstants;
 import org.heater.api.serialized.SerializeUtils;
 import org.heater.api.serialized.SerializedFile;
+import org.heater.api.serialized.SerializedReleases;
 import org.heater.api.utils.FileUtils;
 import org.heater.api.utils.OsCheck;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Created by romain on 11/05/2015.
  */
 public class Builder {
-    private final Map<OsCheck.OSType, SerializedFile> newFiles = new HashMap<>();
+    private final Map<OsCheck.OSType, List<SerializedFile>> oldFiles = new HashMap<>();
+    private final Map<OsCheck.OSType, List<SerializedFile>> newFiles = new HashMap<>();
     private final Map<OsCheck.OSType, Release> releases = new HashMap<>();
 
     public void build() {
@@ -34,7 +37,37 @@ public class Builder {
         System.out.println("Compressing releases...");
         compressReleases();
 
+        System.out.println("Updating serialized files...");
+        updateSerializedFiles();
+
         System.out.println("Done.");
+    }
+
+    private void updateSerializedFiles() {
+        Map<OsCheck.OSType, List<SerializedFile>> updated = new HashMap<>(oldFiles);
+        int rWin = -1, rLin = -1, rMac = -1;
+
+        for(Map.Entry<OsCheck.OSType, Release> entry: releases.entrySet()) {
+            OsCheck.OSType os = entry.getKey();
+            int lastRelease = entry.getValue().getRelease();
+
+            switch(os) {
+                case WINDOWS: rWin = lastRelease;
+                case LINUX: rLin = lastRelease;
+                case MAC: rMac = lastRelease;
+            }
+
+            List<SerializedFile> newFiles = this.newFiles.get(entry.getKey());
+
+            for(SerializedFile srf: newFiles) {
+                List<SerializedFile> updatedList = updated.get(os);
+                updatedList.remove(srf);
+                updatedList.add(SerializedFile.resolve(new File(srf.getPath()), lastRelease));
+            }
+        }
+
+        SerializeUtils.write(new SerializedReleases(rWin, rMac, rLin), path("releases", "releases.dat"));
+        SerializeUtils.write(updated, path("files", "files.dat"));
     }
 
     @SneakyThrows
@@ -54,8 +87,8 @@ public class Builder {
     }
 
     private void createNewReleases() {
-        for(Map.Entry<OsCheck.OSType, SerializedFile> entry: newFiles.entrySet()) {
-            SerializedFile doubloon = entry.getValue();
+        for(Map.Entry<OsCheck.OSType, List<SerializedFile>> entry: newFiles.entrySet()) {
+            List<SerializedFile> doubloons = entry.getValue();
             OsCheck.OSType os = entry.getKey();
 
             Release release = releases.get(os);
@@ -64,7 +97,8 @@ public class Builder {
                 release = releases.put(os,
                         new Release(calculateNewRelease(os), new ArrayList<File>()));
 
-            release.getFiles().add(new File(doubloon.getPath()));
+            for(SerializedFile doubloon: doubloons)
+                release.getFiles().add(new File(doubloon.getPath()));
         }
     }
 
@@ -84,25 +118,28 @@ public class Builder {
     private void removeDoubloons() {
         Map<OsCheck.OSType, Map<Integer, ZipFile>> old = new HashMap<>();
 
-        for(Map.Entry<OsCheck.OSType, SerializedFile> entry: newFiles.entrySet()) {
-            SerializedFile doubloon = entry.getValue();
+        for(Map.Entry<OsCheck.OSType, List<SerializedFile>> entry: newFiles.entrySet()) {
+            List<SerializedFile> doubloons = entry.getValue();
             OsCheck.OSType os = entry.getKey();
-            int release = doubloon.getRelease();
 
-            if(release == -1) continue; //added file
+            for(SerializedFile doubloon: doubloons) {
+                int release = doubloon.getRelease();
 
-            Map<Integer, ZipFile> map = old.get(os);
+                if (release == -1) continue; //added file
 
-            if(map == null) {
-                map = old.put(os, new HashMap<Integer, ZipFile>());
-                map.put(release, zipFile(release, os.toString()));
-            }
+                Map<Integer, ZipFile> map = old.get(os);
 
-            try {
-                map.get(release).removeFile(doubloon.getPath());
-            } catch(Exception e) {
-                System.out.println(String.format(
-                        "Error trying to remove %s: %s", doubloon.getPath(), e.getMessage()));
+                if (map == null) {
+                    map = old.put(os, new HashMap<Integer, ZipFile>());
+                    map.put(release, zipFile(release, os.toString()));
+                }
+
+                try {
+                    map.get(release).removeFile(doubloon.getPath());
+                } catch (Exception e) {
+                    System.out.println(String.format(
+                            "Error trying to remove %s: %s", doubloon.getPath(), e.getMessage()));
+                }
             }
         }
     }
@@ -122,24 +159,36 @@ public class Builder {
                 for (File file : list) {
                     SerializedFile newFile = null;
 
-                    Map<OsCheck.OSType, SerializedFile> lastFiles =
-                            SerializeUtils.getFiles(path("files", "files.dat"));
+                    oldFiles.putAll(SerializeUtils.getFiles(path("files", "files.dat")));
 
-                    for (SerializedFile srf : lastFiles.values())
-                        if (srf.getPath().equals(file.getPath()))
-                            newFile = srf;
+                    for (List<SerializedFile> l : oldFiles.values())
+                        for(SerializedFile srf: l)
+                            if (srf.getPath().equals(file.getPath()))
+                                newFile = srf;
+
+                    List<SerializedFile> l = newFiles.get(os);
 
                     if (newFile == null) {
                         //release -1 (=) new file
-                        newFiles.put(os, SerializedFile.resolve(file, -1));
+                        if(l == null)
+                            l = newFiles.put(os, new ArrayList<SerializedFile>());
+
+                        l.add(SerializedFile.resolve(file, -1));
                     } else {
                         if (FileUtils.getCheckSum(file).equalsIgnoreCase(newFile.getChecksum()))
                             if (os == OsCheck.OSType.ALL) {
                                 for (OsCheck.OSType type : OsCheck.OSType.values())
-                                    if (type != OsCheck.OSType.ALL)
-                                        newFiles.put(type, newFile);
-                            } else
-                                newFiles.put(os, newFile);
+                                    if (type != OsCheck.OSType.ALL) {
+                                        if(l == null)
+                                            l = newFiles.put(os, new ArrayList<SerializedFile>());
+
+                                        l.add(newFile);
+                                    }
+                            } else {
+                                if(l == null)
+                                    l = newFiles.put(os, new ArrayList<SerializedFile>());
+                                l.add(newFile);
+                            }
                     }
                 }
             }

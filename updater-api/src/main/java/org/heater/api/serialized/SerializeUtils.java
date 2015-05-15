@@ -6,6 +6,7 @@ import org.heater.api.utils.OsCheck;
 import java.io.*;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,12 +14,12 @@ import java.util.Map;
  */
 public class SerializeUtils {
     @SuppressWarnings("unchecked")
-    public static Map<OsCheck.OSType, SerializedFile> getFiles(InputStream stream) {
+    public static Map<OsCheck.OSType, List<SerializedFile>> getFiles(InputStream stream) {
         ObjectInputStream object = null;
 
         try {
             object = new ObjectInputStream(stream);
-            return (Map<OsCheck.OSType, SerializedFile>) object.readObject();
+            return (Map<OsCheck.OSType, List<SerializedFile>>) object.readObject();
         } catch (Exception e) {
             return new HashMap<>();
         } finally {
@@ -28,7 +29,7 @@ public class SerializeUtils {
         }
     }
 
-    public static Map<OsCheck.OSType, SerializedFile> getFiles(URL url) {
+    public static Map<OsCheck.OSType, List<SerializedFile>> getFiles(URL url) {
         try {
             return getFiles(url.openStream());
         } catch(Exception e) {
@@ -36,7 +37,7 @@ public class SerializeUtils {
         }
     }
 
-    public static Map<OsCheck.OSType, SerializedFile> getFiles(String localPath) {
+    public static Map<OsCheck.OSType, List<SerializedFile>> getFiles(String localPath) {
         try {
             return getFiles(new FileInputStream(new File(localPath)));
         } catch(Exception e) {
@@ -45,15 +46,15 @@ public class SerializeUtils {
     }
 
     @SneakyThrows
-    public static void writeFiles(Map<OsCheck.OSType, SerializedFile> files, String path) {
-        java.io.File f = new java.io.File(path+"files.dat");
+    public static void write(Object o, String path) {
+        java.io.File f = new java.io.File(path);
         if (f.exists())
             f.delete();
 
-        FileOutputStream out = new FileOutputStream(path+"files.dat");
+        FileOutputStream out = new FileOutputStream(path);
         ObjectOutputStream object = new ObjectOutputStream(out);
 
-        object.writeObject(files);
+        object.writeObject(o);
         object.flush();
         object.close();
         out.close();
