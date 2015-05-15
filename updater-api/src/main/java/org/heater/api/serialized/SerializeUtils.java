@@ -5,6 +5,7 @@ import org.heater.api.utils.OsCheck;
 
 import java.io.*;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -19,7 +20,7 @@ public class SerializeUtils {
             object = new ObjectInputStream(stream);
             return (Map<OsCheck.OSType, SerializedFile>) object.readObject();
         } catch (Exception e) {
-            return null;
+            return new HashMap<>();
         } finally {
             try {
                 if(object != null) object.close();
@@ -27,14 +28,20 @@ public class SerializeUtils {
         }
     }
 
-    @SneakyThrows
     public static Map<OsCheck.OSType, SerializedFile> getFiles(URL url) {
-        return getFiles(url.openStream());
+        try {
+            return getFiles(url.openStream());
+        } catch(Exception e) {
+            return new HashMap<>();
+        }
     }
 
-    @SneakyThrows
     public static Map<OsCheck.OSType, SerializedFile> getFiles(String localPath) {
-        return getFiles(new FileInputStream(new File(localPath)));
+        try {
+            return getFiles(new FileInputStream(new File(localPath)));
+        } catch(Exception e) {
+            return new HashMap<>();
+        }
     }
 
     @SneakyThrows
@@ -42,6 +49,7 @@ public class SerializeUtils {
         java.io.File f = new java.io.File(path+"files.dat");
         if (f.exists())
             f.delete();
+
         FileOutputStream out = new FileOutputStream(path+"files.dat");
         ObjectOutputStream object = new ObjectOutputStream(out);
 
