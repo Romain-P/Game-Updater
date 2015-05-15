@@ -72,7 +72,7 @@ public class Builder {
         int newRelease = 1;
 
         for (int i = 1; true; i++) {
-            File file = new File(path("releases", os.toString(), String.valueOf(i)));
+            File file = new File(path("releases", os.toString(), i+".zip"));
             if(file.exists())
                 newRelease = i+1;
             else break;
@@ -110,7 +110,7 @@ public class Builder {
     @SneakyThrows
     private ZipFile zipFile(int release, String os) {
         return new ZipFile(
-                new File(path("releases", os, String.valueOf(release))));
+                new File(path("releases", os, release+".zip")));
     }
 
     private void findNewFiles() {
