@@ -7,6 +7,6 @@ import java.util.Scanner;
  */
 public class Main {
     public static void main(String[] args) {
-        new ConsoleAnalyzer(new Builder(), new Scanner(System.in));
+        new ConsoleAnalyzer(new Builder(), new Scanner(System.in)).start();
     }
 }

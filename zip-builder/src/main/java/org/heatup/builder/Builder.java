@@ -180,7 +180,7 @@ public class Builder {
                                 for (OsCheck.OSType type : OsCheck.OSType.values())
                                     if (type != OsCheck.OSType.ALL) {
                                         if(l == null)
-                                            l = newFiles.put(os, new ArrayList<SerializedFile>());
+                                            l = newFiles.put(type, new ArrayList<SerializedFile>());
 
                                         l.add(newFile);
                                     }
