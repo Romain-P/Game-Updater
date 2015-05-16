@@ -10,7 +10,7 @@ import java.awt.*;
  */
 public class Main {
     public static void main(String[] args) {
-        AppUtils.requestRights();
+        AppUtils.deployingSystemLook();
 
         if(AppUtils.requestRights()) return;
 
