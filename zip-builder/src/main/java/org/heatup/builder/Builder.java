@@ -75,7 +75,7 @@ public class Builder {
 
         SerializeUtils.write(new SerializedReleases(rWin, rMac, rLin), path("releases", "releases.dat"));
         SerializeUtils.write(updated, path("files", "files.dat"));
-        SerializeUtils.write(updated, path("files", "paths.dat"));
+        SerializeUtils.write(fromPath, path("files", "paths.dat"));
     }
 
     @SneakyThrows
