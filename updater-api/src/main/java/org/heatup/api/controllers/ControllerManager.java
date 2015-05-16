@@ -5,5 +5,5 @@ package org.heatup.api.controllers;
  */
 public interface ControllerManager {
     void start();
-    void end();
+    void end(boolean dispose);
 }

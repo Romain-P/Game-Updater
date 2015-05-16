@@ -10,14 +10,12 @@ import java.awt.event.MouseEvent;
 
 public class FormContent extends JPanel{
     private final UpdateManager manager;
-    private final Form form;
     @Getter private JButton closeButton;
     @Getter private JButton playButton;
     @Getter private final JLabel firstLine, secondLine;
 
     public FormContent(UpdateManager manager, Form form) {
         this.manager = manager;
-        this.form = form;
         this.firstLine = new JLabel();
         this.secondLine = new JLabel();
     }
@@ -42,8 +40,7 @@ public class FormContent extends JPanel{
     private void deployListeners() {
         closeButton.addMouseListener(new MouseAdapter() {
             public void mouseReleased(MouseEvent event) {
-                manager.end();
-                form.dispose();
+                manager.end(true);
             }
         });
     }
