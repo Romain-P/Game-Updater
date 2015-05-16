@@ -16,13 +16,13 @@ public final class SerializedFile implements Serializable {
     private final String path;
     private final int release;
     private final long checksum;
-    private final long length;
+    private final String zipPath;
 
-    public static SerializedFile resolve(File file, int release) {
+    public static SerializedFile resolve(File file, String zipPath, int release) {
         return new SerializedFile(
                 file.getPath(),
                 release,
                 Checksum.get(file),
-                file.length());
+                zipPath);
     }
 }

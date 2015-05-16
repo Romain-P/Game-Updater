@@ -20,6 +20,7 @@ public class Builder {
     private final Map<OsCheck.OSType, List<SerializedFile>> oldFiles = new HashMap<>();
     private final Map<OsCheck.OSType, List<SerializedFile>> newFiles = new HashMap<>();
     private final Map<OsCheck.OSType, Release> releases = new HashMap<>();
+    private final OsCheck.OSType localOS = OsCheck.getOperatingSystemType();
 
     public void build() {
         System.out.println("Finding updated files...");
@@ -62,7 +63,7 @@ public class Builder {
                 if(updatedList.contains(srf))
                     updatedList.remove(srf);
 
-                updatedList.add(SerializedFile.resolve(new File(srf.getPath()), lastRelease));
+                updatedList.add(SerializedFile.resolve(new File(srf.getPath()), srf.getZipPath(), lastRelease));
             }
         }
 
@@ -76,21 +77,25 @@ public class Builder {
         params.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
         params.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_ULTRA);
 
-        try {
-            for (Map.Entry<OsCheck.OSType, Release> entry : releases.entrySet()) {
-                Release release = entry.getValue();
-                OsCheck.OSType os = entry.getKey();
+        for (Map.Entry<OsCheck.OSType, Release> entry : releases.entrySet()) {
+            Release release = entry.getValue();
+            OsCheck.OSType os = entry.getKey();
 
-                ZipFile zip = new ZipFile(path("releases", os.toString(), release.getRelease()+".zip"));
+            ZipFile zip = new ZipFile(path("releases", os.toString(), release.getRelease()+".zip"));
 
-                for(File file: release.getFiles()) {
-                    params.setRootFolderInZip(file.getParentFile().getPath());
-                    zip.addFile(file, params);
-                }
+            String separator = File.separator;
+
+            for(Map.Entry<File, String> file: release.getFiles().entrySet()) {
+                String zipPath = file.getValue();
+
+                if(zipPath.contains(separator))
+                    zipPath = zipPath.substring(0, zipPath.lastIndexOf(separator));
+                else
+                    zipPath = "";
+
+                params.setRootFolderInZip(zipPath);
+                zip.addFile(file.getKey(), params);
             }
-        } catch(Exception e) {
-            System.out.println(e.getMessage());
-            System.exit(1);
         }
     }
 
@@ -102,14 +107,12 @@ public class Builder {
             Release release = releases.get(os);
 
             if(release == null) {
-                release = new Release(calculateNewRelease(os), new ArrayList<File>());
+                release = new Release(calculateNewRelease(os), new HashMap<File, String>());
                 releases.put(os, release);
             }
 
-            for(SerializedFile doubloon: doubloons) {
-                release.getFiles().add(new File(doubloon.getPath()));
-                System.out.println(doubloon.getPath());
-            }
+            for(SerializedFile doubloon: doubloons)
+                release.getFiles().put(new File(doubloon.getPath()), doubloon.getZipPath());
         }
     }
 
@@ -147,7 +150,7 @@ public class Builder {
                 }
 
                 try {
-                    map.get(release).removeFile(doubloon.getPath());
+                    map.get(release).removeFile(doubloon.getZipPath());
                 } catch (Exception e) {
                     System.out.println(String.format(
                             "Error trying to remove %s: %s", doubloon.getPath(), e.getMessage()));
@@ -181,7 +184,7 @@ public class Builder {
                                 newFile = srf;
 
                     if (newFile == null) {
-                        addNewFile(SerializedFile.resolve(file, -1), os);
+                        addNewFile(SerializedFile.resolve(file, zipPath(file.getPath()), -1), os);
                         updated++;
                     }
 
@@ -218,6 +221,16 @@ public class Builder {
         list.add(file);
     }
 
+    private String zipPath(String path) {
+        boolean mac = localOS == OsCheck.OSType.MAC;
+        return path
+                .replace(path("files", "all"), "")
+                .replace(path("files", "windows"), "")
+                .replace(path("files", "linux"), "")
+                .replace(path("files", "mac"), "")
+                .substring(mac ? 0 : File.separator.length());
+    }
+
     private String path(String... files) {
         String separator = File.separator;
         StringBuilder builder = new StringBuilder();
@@ -225,6 +238,7 @@ public class Builder {
         for(String file: files)
             builder.append(separator).append(file);
 
-        return builder.toString().substring(separator.length());
+        boolean mac = localOS == OsCheck.OSType.MAC;
+        return builder.toString().substring(mac ? 0 : separator.length());
     }
 }
