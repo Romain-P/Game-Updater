@@ -20,7 +20,6 @@ public class Builder {
     private final Map<OsCheck.OSType, List<SerializedFile>> oldFiles = new HashMap<>();
     private final Map<OsCheck.OSType, List<SerializedFile>> newFiles = new HashMap<>();
     private final Map<OsCheck.OSType, Release> releases = new HashMap<>();
-    private final OsCheck.OSType localOS = OsCheck.getOperatingSystemType();
 
     public void build() {
         System.out.println("Finding updated files...");
@@ -243,13 +242,12 @@ public class Builder {
     }
 
     private String zipPath(String path) {
-        boolean mac = localOS == OsCheck.OSType.MAC;
         return path
                 .replace(path("files", "all"), "")
                 .replace(path("files", "windows"), "")
                 .replace(path("files", "linux"), "")
                 .replace(path("files", "mac"), "")
-                .substring(mac ? 0 : File.separator.length());
+                .substring(File.separator.length());
     }
 
     private String path(String... files) {
@@ -259,7 +257,6 @@ public class Builder {
         for(String file: files)
             builder.append(separator).append(file);
 
-        boolean mac = localOS == OsCheck.OSType.MAC;
-        return builder.toString().substring(mac ? 0 : separator.length());
+        return builder.toString().substring(separator.length());
     }
 }
