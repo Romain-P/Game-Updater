@@ -170,7 +170,7 @@ public class Builder {
 
         for(OsCheck.OSType os: OsCheck.OSType.values()) {
             File filesFolder = new File(path("files", os.toString()));
-            File[] list = filesFolder.listFiles();
+            List<File> list = getFiles(filesFolder);
 
             if(list != null) {
                 for (File file : list) {
@@ -219,6 +219,23 @@ public class Builder {
         }
 
         list.add(file);
+    }
+
+    public List<File> getFiles(File folder) {
+        List<File> list = new ArrayList<>();
+
+        File[] files = folder.listFiles();
+
+        if(files != null) {
+            for(File file: files) {
+                if (file.isDirectory())
+                    list.addAll(getFiles(file));
+                else
+                    list.add(file);
+            }
+        }
+
+        return list;
     }
 
     private String zipPath(String path) {
