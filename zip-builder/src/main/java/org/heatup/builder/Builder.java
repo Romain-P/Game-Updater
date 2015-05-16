@@ -58,7 +58,10 @@ public class Builder {
 
             for(SerializedFile srf: newFiles) {
                 List<SerializedFile> updatedList = updated.get(os);
-                updatedList.remove(srf);
+
+                if(updatedList.contains(srf))
+                    updatedList.remove(srf);
+
                 updatedList.add(SerializedFile.resolve(new File(srf.getPath()), lastRelease));
             }
         }
@@ -80,7 +83,10 @@ public class Builder {
 
                 ZipFile zip = new ZipFile(path("releases", os.toString(), release.getRelease()+".zip"));
 
-                zip.createZipFile(release.getFiles(), params);
+                for(File file: release.getFiles()) {
+                    params.setRootFolderInZip(file.getParentFile().getPath());
+                    zip.addFile(file, params);
+                }
             }
         } catch(Exception e) {
             System.out.println(e.getMessage());
@@ -100,8 +106,10 @@ public class Builder {
                 releases.put(os, release);
             }
 
-            for(SerializedFile doubloon: doubloons)
+            for(SerializedFile doubloon: doubloons) {
                 release.getFiles().add(new File(doubloon.getPath()));
+                System.out.println(doubloon.getPath());
+            }
         }
     }
 
@@ -155,6 +163,8 @@ public class Builder {
     }
 
     private void findNewFiles() {
+        int updated = 0;
+
         for(OsCheck.OSType os: OsCheck.OSType.values()) {
             File filesFolder = new File(path("files", os.toString()));
             File[] list = filesFolder.listFiles();
@@ -172,14 +182,22 @@ public class Builder {
 
                     if (newFile == null) {
                         addNewFile(SerializedFile.resolve(file, -1), os);
-                    } else {
-                        if (Checksum.get(file) == newFile.getChecksum()) {
-                            addNewFile(newFile, os);
-                        }
+                        updated++;
+                    }
+
+                    else if (Checksum.get(file) != newFile.getChecksum()) {
+                        addNewFile(newFile, os);
+                        updated++;
                     }
                 }
             }
         }
+
+        if(newFiles.size() == 0) {
+            System.out.println("Releases are already up-to-date.");
+            System.exit(0);
+        } else
+            System.out.println(String.format("%d files found", updated));
     }
 
     private void addNewFile(SerializedFile file, OsCheck.OSType os) {
@@ -208,9 +226,5 @@ public class Builder {
             builder.append(separator).append(file);
 
         return builder.toString().substring(separator.length());
-    }
-
-    private void d(String s) {
-        System.out.println(s);
     }
 }
