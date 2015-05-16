@@ -43,6 +43,8 @@ public class Builder {
 
     private void updateSerializedFiles() {
         Map<OsCheck.OSType, List<SerializedFile>> updated = new HashMap<>(oldFiles);
+        Map<String, SerializedFile> fromPath = new HashMap<>();
+
         int rWin = -1, rLin = -1, rMac = -1;
 
         for(Map.Entry<OsCheck.OSType, Release> entry: releases.entrySet()) {
@@ -67,8 +69,13 @@ public class Builder {
             }
         }
 
+        for(List<SerializedFile> files: updated.values())
+            for(SerializedFile file: files)
+                fromPath.put(file.getPath(), file);
+
         SerializeUtils.write(new SerializedReleases(rWin, rMac, rLin), path("releases", "releases.dat"));
         SerializeUtils.write(updated, path("files", "files.dat"));
+        SerializeUtils.write(updated, path("files", "paths.dat"));
     }
 
     @SneakyThrows
@@ -173,15 +180,12 @@ public class Builder {
             List<File> list = getFiles(filesFolder);
 
             if(list != null) {
+                oldFiles.putAll(SerializeUtils.getFiles(path("files", "files.dat")));
+                Map<String, SerializedFile> oldFromPaths =
+                        SerializeUtils.getFromPaths(path("files", "paths.dat"));
+
                 for (File file : list) {
-                    SerializedFile newFile = null;
-
-                    oldFiles.putAll(SerializeUtils.getFiles(path("files", "files.dat")));
-
-                    for (List<SerializedFile> l : oldFiles.values())
-                        for(SerializedFile srf: l)
-                            if (srf.getPath().equals(file.getPath()))
-                                newFile = srf;
+                    SerializedFile newFile = oldFromPaths.get(file.getPath());
 
                     if (newFile == null) {
                         addNewFile(SerializedFile.resolve(file, zipPath(file.getPath()), -1), os);

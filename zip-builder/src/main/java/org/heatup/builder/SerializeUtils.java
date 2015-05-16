@@ -4,7 +4,6 @@ import lombok.SneakyThrows;
 import org.heatup.api.utils.OsCheck;
 
 import java.io.*;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,12 +14,12 @@ import java.util.Map;
  */
 public class SerializeUtils {
     @SuppressWarnings("unchecked")
-    public static Map<OsCheck.OSType, List<SerializedFile>> getFiles(InputStream stream) {
+    public static Object getFiles(InputStream stream) {
         ObjectInputStream object = null;
 
         try {
             object = new ObjectInputStream(stream);
-            return (Map<OsCheck.OSType, List<SerializedFile>>) object.readObject();
+            return object.readObject();
         } catch (Exception e) {
             return getMap();
         } finally {
@@ -30,19 +29,21 @@ public class SerializeUtils {
         }
     }
 
-    public static Map<OsCheck.OSType, List<SerializedFile>> getFiles(URL url) {
+    @SuppressWarnings("unchecked")
+    public static Map<OsCheck.OSType, List<SerializedFile>> getFiles(String localPath) {
         try {
-            return getFiles(url.openStream());
+            return (Map<OsCheck.OSType, List<SerializedFile>>) getFiles(new FileInputStream(new File(localPath)));
         } catch(Exception e) {
             return getMap();
         }
     }
 
-    public static Map<OsCheck.OSType, List<SerializedFile>> getFiles(String localPath) {
+    @SuppressWarnings("unchecked")
+    public static Map<String, SerializedFile> getFromPaths(String localPath) {
         try {
-            return getFiles(new FileInputStream(new File(localPath)));
+            return (Map<String, SerializedFile>) getFiles(new FileInputStream(new File(localPath)));
         } catch(Exception e) {
-            return getMap();
+            return new HashMap<>();
         }
     }
 
