@@ -14,6 +14,7 @@ import java.util.List;
 public class UpdateManager implements ControllerManager {
     private final List<Controller> controllers;
     private final Form form;
+    private boolean isEnd;
 
     public UpdateManager(Controller... controllers) {
         this.controllers = Collections.unmodifiableList(Arrays.asList(controllers));
@@ -30,9 +31,12 @@ public class UpdateManager implements ControllerManager {
 
     @Override
     public void end(boolean dispose) {
+        if(isEnd) return;
+
         for(Controller controller: controllers)
             controller.end();
 
         if(dispose) form.dispose();
+        isEnd = true;
     }
 }

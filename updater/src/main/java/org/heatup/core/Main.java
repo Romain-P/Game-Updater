@@ -24,9 +24,8 @@ public class Main {
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
-                manager.end();
+                manager.end(true);
             }
         }));
-
     }
 }
