@@ -28,7 +28,7 @@ public class Builder {
         System.out.println("Removing doubloons from old zips...");
         removeDoubloons();
 
-        System.out.println("Sorting files per os & creating new released");
+        System.out.println("Sorting files per os & creating new releases..");
         createNewReleases();
 
         System.out.println("Compressing releases...");

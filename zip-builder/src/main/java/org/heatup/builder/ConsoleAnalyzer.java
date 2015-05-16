@@ -14,7 +14,6 @@ public class ConsoleAnalyzer {
 
     public void start() {
         String command;
-
         System.out.println("Write the 'build' command to analyze & rebuild releases");
 
         while((command = console.next()) != null) {
