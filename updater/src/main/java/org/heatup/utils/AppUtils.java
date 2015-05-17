@@ -15,6 +15,7 @@ import java.util.prefs.Preferences;
  * Created by romain on 16/05/2015.
  */
 public class AppUtils {
+    public static final OsCheck.OSType OS = OsCheck.getOperatingSystemType();
 
     public static void deployingSystemLook() {
         try {
@@ -25,7 +26,7 @@ public class AppUtils {
 
     public static boolean requestRights() {
         if(!hasRights()) {
-            OsCheck.OSType type = OsCheck.getOperatingSystemType();
+            OsCheck.OSType type = OS;
 
             switch (type) {
                 case WINDOWS: {

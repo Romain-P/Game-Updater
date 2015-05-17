@@ -1,5 +1,6 @@
 package org.heatup.view;
 
+import org.heatup.api.UI.UserInterface;
 import org.heatup.core.UpdateManager;
 import org.heatup.utils.FileUtils;
 
@@ -9,17 +10,17 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
-public class Form extends JFrame {
+public class Form extends JFrame implements UserInterface{
     private final UpdateManager manager;
     private final FormContent content;
     private Point mousePointMover;
 
     public Form(UpdateManager manager) {
         this.manager = manager;
-        this.content = new FormContent(manager, this);
+        this.content = new FormContent(manager);
     }
 
-    public Form initialize() {
+    public void initialize() {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setContentPane(content.initialize());
         setUndecorated(true);
@@ -36,23 +37,38 @@ public class Form extends JFrame {
 
         setVisible(true);
         deployMoving();
-        return this;
     }
 
-    public void updateFileProgress(String fileName, int percentage) {
-        content.getFirstLine().setText("Downloading " + fileName + " (" + percentage + "%)");
+    public void updateCurrentPercentage(int percentage, int step, int steps) {
+        content.getFirstLine().setText(String.format("Downloading package %d/%d (%d %)", step, steps, percentage));
+    }
+
+    public void updateCompressPercentage(int percentage, int step, int steps) {
+        content.getFirstLine().setText(String.format("Unzipping package %d/%d (%d %)", step, steps, percentage));
     }
 
     public void updateTotalPercentage(int percentage, String remainingTime, String speed) {
         content.getSecondLine().setText(remainingTime + " remaining (" + percentage + "% at " + speed + ")");
     }
 
-    public void updateFinished() {
+    public void alreadyUpdated() {
         content.getFirstLine().setText("");
-        String tosend = true//todo
-                ? "Your client is already up-to-date!" : "Download finished successfully!";
-        content.getSecondLine().setText(tosend);
+        content.getSecondLine().setText("Your client is already up-to-date!");
         content.getPlayButton().setEnabled(true);
+    }
+
+    public void updateFinished() {
+        if(content.getFirstLine().getText().isEmpty())
+            return;
+
+        content.getFirstLine().setText("");
+        content.getSecondLine().setText("Download finished successfully!");
+        content.getPlayButton().setEnabled(true);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
     }
 
     private void deployMoving() {

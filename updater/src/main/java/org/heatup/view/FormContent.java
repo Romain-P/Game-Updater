@@ -14,7 +14,7 @@ public class FormContent extends JPanel{
     @Getter private JButton playButton;
     @Getter private final JLabel firstLine, secondLine;
 
-    public FormContent(UpdateManager manager, Form form) {
+    public FormContent(UpdateManager manager) {
         this.manager = manager;
         this.firstLine = new JLabel();
         this.secondLine = new JLabel();

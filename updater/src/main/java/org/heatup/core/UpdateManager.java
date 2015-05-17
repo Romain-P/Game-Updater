@@ -1,29 +1,37 @@
 package org.heatup.core;
 
+import lombok.Getter;
+import org.heatup.api.UI.AppManager;
+import org.heatup.api.UI.UserInterface;
 import org.heatup.api.controllers.Controller;
-import org.heatup.api.controllers.ControllerManager;
 import org.heatup.view.Form;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by romain on 16/05/2015.
  */
-public class UpdateManager implements ControllerManager {
+public class UpdateManager extends AppManager {
     private final List<Controller> controllers;
-    private final Form form;
+    @Getter private final ExecutorService worker;
+    @Getter private final UserInterface form;
     private boolean isEnd;
 
-    public UpdateManager(Controller... controllers) {
-        this.controllers = Collections.unmodifiableList(Arrays.asList(controllers));
+    public UpdateManager() {
+        this.controllers = new ArrayList<>();
         this.form = new Form(this);
+        this.worker = Executors.newCachedThreadPool();
     }
 
     @Override
-    public void start() {
+    public void start(Controller... controllers) {
         form.initialize();
+
+        this.controllers.addAll(Arrays.asList(controllers));
 
         for(Controller controller: controllers)
             controller.start();
