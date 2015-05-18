@@ -3,8 +3,8 @@ package org.heatup.controllers;
 import org.heatup.api.UI.AppManager;
 import org.heatup.api.controllers.Controller;
 
-import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +38,11 @@ public class DownloadController implements Controller{
                             break;
                         }
 
-                        InputStream stream = url.openConnection().getInputStream();
+                        if(url == null) continue;
+
+                        URLConnection connection = url.openConnection();
+
+
                     } catch(Exception e) {
                         System.out.println(e.getMessage());
                     }

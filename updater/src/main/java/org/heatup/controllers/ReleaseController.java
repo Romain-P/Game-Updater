@@ -3,6 +3,9 @@ package org.heatup.controllers;
 import lombok.Getter;
 import org.heatup.api.UI.AppManager;
 import org.heatup.api.controllers.Controller;
+import org.heatup.api.serialized.SerializedObjectInterface;
+import org.heatup.api.serialized.SerializedReleases;
+import org.heatup.api.serialized.implementations.SerializedObject;
 import org.heatup.core.Main;
 import org.heatup.utils.AppUtils;
 import org.heatup.utils.FileUtils;
@@ -18,10 +21,14 @@ public class ReleaseController implements Controller {
     private final AppManager manager;
     @Getter private final LinkedBlockingDeque<URL> files;
     private Future<?> future;
+    private final SerializedObjectInterface<SerializedReleases> serializedReleases;
+    private final SerializedObjectInterface<Integer> serializedRelease;
 
     public ReleaseController(AppManager manager) {
         this.manager = manager;
         this.files = new LinkedBlockingDeque<>();
+        this.serializedReleases = SerializedObject.create(FileUtils.path("releases", "releases.dat"), true);
+        this.serializedRelease = SerializedObject.create(FileUtils.path("release.int"), false);
     }
 
     @Override
@@ -29,10 +36,9 @@ public class ReleaseController implements Controller {
         this.future = manager.getWorker().submit(new Runnable() {
             @Override
             public void run() {
-                int serverRelease = FileUtils.getReleases(
-                        FileUtils.path(Main.SERVER, "releases", "releases.dat")).lastRelease(AppUtils.OS);
-                int release = FileUtils.getLocalRelease("release.int");
-
+                Integer integer = serializedRelease.get();
+                int release = integer == null ? 0 : integer;
+                int serverRelease = serializedReleases.get().lastRelease(AppUtils.OS);
                 int result = serverRelease - release;
 
                 if(result == 0 || result < 0) {
@@ -48,6 +54,8 @@ public class ReleaseController implements Controller {
                         System.out.println(e.getMessage());
                     }
                 }
+
+                serializedRelease.write(serverRelease);
             }
         });
     }
