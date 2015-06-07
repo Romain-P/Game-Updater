@@ -1,13 +1,13 @@
 package org.heatup.utils;
 
-import org.heatup.api.serialized.SerializedReleases;
 import org.heatup.core.Main;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
-import java.net.URL;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 
 /**
@@ -24,44 +24,42 @@ public class FileUtils {
         return builder.toString().substring(1);
     }
 
-    public static Integer getLocalRelease(String localPath) {
-        try {
-            return (Integer) getObject(new FileInputStream(localPath));
-        } catch(Exception e) {
-            return 0;
-        }
-    }
-
-    public static SerializedReleases getReleases(String url) {
-        try {
-            return (SerializedReleases) getObject(new URL(url).openStream());
-        } catch(Exception e) {
-            return null;
-        }
-    }
-
-    private static Object getObject(InputStream stream) {
-            ObjectInputStream object = null;
-
-            try {
-                object = new ObjectInputStream(stream);
-                return object.readObject();
-            } catch (Exception e) {
-                return null;
-            } finally {
-                try {
-                    if(object != null) object.close();
-                } catch (IOException e) {}
-            }
-    }
-
     public static String getReadableSize(long bytes) {
         if(bytes <= 0) return "0";
 
-        final String[] units = new String[] { "B", "kiB", "MiB", "GiB", "TiB" };
+        final String[] units = new String[] { "B/s", "KiB/s", "MiB/s", "GiB/s", "TiB/s" };
         int digitGroups = (int) (Math.log10(bytes)/Math.log10(1024));
 
         return new DecimalFormat("#,##0.#").format(bytes/Math.pow(1024, digitGroups)) + " " + units[digitGroups];
+    }
+
+    public static String getTimeAsString(long milliseconds) {
+        double days, hours, minutes, seconds;
+
+        final double msPerSecond = 1000;
+        final double msPerMinute = 60 * msPerSecond;
+        final double msPerHour = 60 * msPerMinute;
+        final double msPerDay =  24 * msPerHour;
+
+        days = milliseconds / msPerDay;
+        milliseconds %= msPerDay;
+        hours = milliseconds / msPerHour;
+        milliseconds %= msPerHour;
+        minutes = milliseconds / msPerMinute;
+        milliseconds %= msPerMinute;
+        seconds = milliseconds / msPerSecond;
+
+        String asString;
+        if (days >= 1)
+            asString = ((int) days + 1) + " days";
+        else if (hours >= 1)
+            asString = ((int) hours + 1) + " hours";
+        else if(minutes >= 1)
+            asString = ((int) minutes + 1) + " minutes";
+        else
+            asString = ((int) seconds + 1) + " seconds";
+
+        return asString;
     }
 
     public static Image getImage(String name) {

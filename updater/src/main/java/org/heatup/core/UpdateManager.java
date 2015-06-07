@@ -44,6 +44,8 @@ public class UpdateManager extends AppManager {
         for(Controller controller: controllers)
             controller.end();
 
+        worker.shutdown();
+
         if(dispose) form.dispose();
         isEnd = true;
     }

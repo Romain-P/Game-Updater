@@ -4,7 +4,9 @@ import lombok.SneakyThrows;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.util.Zip4jConstants;
+import org.heatup.api.serialized.SerializedObject;
 import org.heatup.api.serialized.SerializedReleases;
+import org.heatup.api.serialized.implementations.SerializedObjectImpl;
 import org.heatup.api.utils.OsCheck;
 
 import java.io.File;
@@ -17,9 +19,20 @@ import java.util.Map;
  * Created by romain on 11/05/2015.
  */
 public class Builder {
-    private final Map<OsCheck.OSType, List<SerializedFile>> oldFiles = new HashMap<>();
-    private final Map<OsCheck.OSType, List<SerializedFile>> newFiles = new HashMap<>();
-    private final Map<OsCheck.OSType, Release> releases = new HashMap<>();
+    private final SerializedObject<Map<OsCheck.OSType, List<SerializedFile>>> oldFiles;
+    private final SerializedObject<Map<String, SerializedFile>> paths;
+    private final Map<OsCheck.OSType, List<SerializedFile>> newFiles;
+    private final Map<OsCheck.OSType, Release> releases;
+
+    public Builder() {
+        this.oldFiles = SerializedObjectImpl.<Map<OsCheck.OSType, List<SerializedFile>>>create(path("files", "files.dat"), false,
+                new HashMap<OsCheck.OSType, List<SerializedFile>>());
+        this.paths = SerializedObjectImpl.<Map<String, SerializedFile>>create(path("files", "paths.dat"), false,
+                new HashMap<String, SerializedFile>());
+
+        this.newFiles = new HashMap<>();
+        this.releases = new HashMap<>();
+    }
 
     public void build() {
         System.out.println("Finding updated files...");
@@ -41,10 +54,12 @@ public class Builder {
     }
 
     private void updateSerializedFiles() {
-        Map<OsCheck.OSType, List<SerializedFile>> updated = new HashMap<>(oldFiles);
+        Map<OsCheck.OSType, List<SerializedFile>> updated = new HashMap<>(oldFiles.get());
         Map<String, SerializedFile> fromPath = new HashMap<>();
 
         int rWin = -1, rLin = -1, rMac = -1;
+
+        Map<OsCheck.OSType, Long> contents = new HashMap<>();
 
         for(Map.Entry<OsCheck.OSType, Release> entry: releases.entrySet()) {
             OsCheck.OSType os = entry.getKey();
@@ -66,15 +81,22 @@ public class Builder {
 
                 updatedList.add(SerializedFile.resolve(new File(srf.getPath()), srf.getZipPath(), lastRelease));
             }
+
+            for (int i = 1; true; i++) {
+                File file = new File(path("releases", os.toString(), i+".zip"));
+                if(file.exists())
+                    contents.put(os, file.length());
+                else break;
+            }
         }
 
         for(List<SerializedFile> files: updated.values())
             for(SerializedFile file: files)
                 fromPath.put(file.getPath(), file);
 
-        SerializeUtils.write(new SerializedReleases(rWin, rMac, rLin), path("releases", "releases.dat"));
-        SerializeUtils.write(updated, path("files", "files.dat"));
-        SerializeUtils.write(fromPath, path("files", "paths.dat"));
+        SerializedObjectImpl.write(path("releases", "releases.dat"), new SerializedReleases(rWin, rMac, rLin, contents));
+        oldFiles.setObject(updated).write();
+        paths.setObject(fromPath).write();
     }
 
     @SneakyThrows
@@ -179,12 +201,9 @@ public class Builder {
             List<File> list = getFiles(filesFolder);
 
             if(list != null) {
-                oldFiles.putAll(SerializeUtils.getFiles(path("files", "files.dat")));
-                Map<String, SerializedFile> oldFromPaths =
-                        SerializeUtils.getFromPaths(path("files", "paths.dat"));
 
                 for (File file : list) {
-                    SerializedFile newFile = oldFromPaths.get(file.getPath());
+                    SerializedFile newFile = paths.get().get(file.getPath());
 
                     if (newFile == null) {
                         addNewFile(SerializedFile.resolve(file, zipPath(file.getPath()), -1), os);
