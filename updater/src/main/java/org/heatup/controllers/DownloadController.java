@@ -10,6 +10,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
@@ -55,8 +56,9 @@ public class DownloadController implements Controller{
                                 time = System.nanoTime(), between, length, elapsed, data = 0;
                         int percent, totalPercent;
 
-                        while(download.transferFrom(Channels.newChannel(connection.getInputStream()),
-                                file.length(), 1024) > 0) {
+                        ReadableByteChannel channel = Channels.newChannel(connection.getInputStream());
+
+                        while(download.transferFrom(channel, file.length(), 1024) > 0) {
                             between = System.nanoTime() - time;
 
                             if(between < 1000000000) continue;
