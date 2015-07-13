@@ -2,6 +2,8 @@ package org.heatup.controllers;
 
 import org.heatup.api.UI.AppManager;
 import org.heatup.api.controllers.Controller;
+import org.heatup.api.serialized.SerializedObject;
+import org.heatup.api.serialized.implementations.SerializedObjectImpl;
 import org.heatup.utils.FileUtils;
 
 import java.io.File;
@@ -11,6 +13,8 @@ import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
@@ -22,10 +26,13 @@ public class DownloadController implements Controller{
     private final AppManager manager;
     private final ReleaseController releases;
     private Future<?> future;
+    private final SerializedObject<List<Integer>> serializedZips;
 
     public DownloadController(AppManager manager, ReleaseController releases) {
         this.manager = manager;
         this.releases = releases;
+        this.serializedZips = SerializedObjectImpl.<List<Integer>>
+                create(FileUtils.path("updates", "zips"), false, new ArrayList<Integer>());
     }
 
     @Override
@@ -90,18 +97,23 @@ public class DownloadController implements Controller{
                             data = length;
                         }
 
+                        download.close();
+                        channel.close();
                         increment++;
                     } catch(Exception e) {
                         System.out.println(e.getMessage());
                     }
-
-                    //TODO: unzipping
-
                 }
+
            // }
         });
+
+        unzipall();
     }
 
+    private void unzipall() {
+
+    }
     @Override
     public void end() {
         if(future != null && !future.isCancelled())
