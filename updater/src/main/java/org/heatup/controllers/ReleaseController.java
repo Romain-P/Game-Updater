@@ -7,6 +7,7 @@ import org.heatup.api.serialized.SerializedObject;
 import org.heatup.api.serialized.SerializedReleases;
 import org.heatup.api.serialized.implementations.SerializedObjectImpl;
 import org.heatup.core.Main;
+import org.heatup.core.UpdateManager;
 import org.heatup.utils.AppUtils;
 import org.heatup.utils.FileUtils;
 
@@ -28,7 +29,7 @@ public class ReleaseController implements Controller {
     public ReleaseController(AppManager manager) {
         this.manager = manager;
         this.files = new LinkedBlockingDeque<>();
-        this.serializedReleases = SerializedObjectImpl.create("http://swtour.com/releases/releases.dat", true, null);
+        this.serializedReleases = SerializedObjectImpl.create(UpdateManager.serverHttp, true, null);
         this.serializedRelease = SerializedObjectImpl.create(FileUtils.path("swtour", "release.int"), false, 0);
     }
 

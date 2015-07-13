@@ -37,23 +37,31 @@ public class DownloadController implements Controller{
                 int increment = 1;
                 long downloaded = 0;
 
-                while(true) {
+                //while(true) {
                     try {
-                        URL url = files.poll(1, TimeUnit.SECONDS);
+                        //URL url = files.poll(1, TimeUnit.SECONDS);
+                        URL url = new URL("http://tpe-audition.net/carnaval.png");
 
-                        if(url == null && files.isEmpty()) {
+                        /**if(url == null && files.isEmpty()) {
                             manager.getForm().updateFinished();
                             break;
-                        }
+                        }**/
 
-                        if(url == null) continue;
+                        //if(url == null) continue;
 
                         URLConnection connection = url.openConnection();
-                        File file = new File(connection.getURL().getPath().substring(1));
-                        FileChannel download = new FileOutputStream(file).getChannel();
+                        File file = new File(url.getPath().substring(1));
+                        long length = file.length();
 
-                        long totalBytes = connection.getContentLengthLong(), start = System.nanoTime(),
-                                time = System.nanoTime(), between, length, elapsed, data = 0;
+                        //if(connection.getContentLengthLong() == file.length())
+                          //  continue;
+                        if(file.exists())
+                            connection.setRequestProperty("Range", "bytes=" + length + "-");
+
+                        FileChannel download = new FileOutputStream(file, file.exists()).getChannel();
+
+                        long totalBytes = connection.getContentLengthLong() + length, start = System.nanoTime(),
+                                time = System.nanoTime(), between, elapsed, data = 0;
                         int percent, totalPercent;
 
                         ReadableByteChannel channel = Channels.newChannel(connection.getInputStream());
@@ -88,8 +96,9 @@ public class DownloadController implements Controller{
                     }
 
                     //TODO: unzipping
+
                 }
-            }
+           // }
         });
     }
 

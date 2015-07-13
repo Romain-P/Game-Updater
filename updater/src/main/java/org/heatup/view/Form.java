@@ -40,11 +40,11 @@ public class Form extends JFrame implements UserInterface{
     }
 
     public void updateCurrentPercentage(int percentage, int step, int steps) {
-        content.getFirstLine().setText(String.format("Downloading package %d/%d (%d %)", step, steps, percentage));
+        content.getFirstLine().setText(String.format("Downloading package %d/%d (%d %%)", step, steps, percentage));
     }
 
     public void updateCompressPercentage(int percentage, int step, int steps) {
-        content.getFirstLine().setText(String.format("Unzipping package %d/%d (%d %)", step, steps, percentage));
+        content.getFirstLine().setText(String.format("Unzipping package %d/%d (%d %%)", step, steps, percentage));
     }
 
     public void updateTotalPercentage(int percentage, String remainingTime, String speed) {
