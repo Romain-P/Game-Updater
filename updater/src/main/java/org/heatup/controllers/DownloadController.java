@@ -2,8 +2,6 @@ package org.heatup.controllers;
 
 import lombok.SneakyThrows;
 import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.model.FileHeader;
-import net.lingala.zip4j.model.UnzipParameters;
 import org.heatup.api.UI.AppManager;
 import org.heatup.api.controllers.Controller;
 import org.heatup.api.serialized.SerializedObject;
@@ -19,7 +17,6 @@ import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Future;
