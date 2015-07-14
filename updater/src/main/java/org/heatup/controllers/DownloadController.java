@@ -69,7 +69,13 @@ public class DownloadController implements Controller{
                 }
 
                 URLConnection connection = url.openConnection();
-                File file = new File(url.getPath().substring(1));
+                String path = url.getPath();
+
+                File file = new File(FileUtils.path(
+                        "updates",
+                        String.valueOf(path.substring(path.lastIndexOf('/')+1, path.lastIndexOf('.'))),
+                        ".zip"));
+
                 long length = file.length();
 
                 if(connection.getContentLengthLong() == file.length()) {
