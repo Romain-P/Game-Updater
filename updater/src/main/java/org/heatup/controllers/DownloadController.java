@@ -20,6 +20,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -38,7 +39,7 @@ public class DownloadController implements Controller{
         this.manager = manager;
         this.releases = releases;
         this.serializedZips = SerializedObjectImpl.<List<Integer>>
-                create(FileUtils.path("updates", "zips"), false, new ArrayList<Integer>());
+                create(FileUtils.path("updates", "zips"), false, new LinkedList<Integer>());
     }
 
     @Override
