@@ -76,6 +76,11 @@ public class Builder {
             for(SerializedFile srf: newFiles) {
                 List<SerializedFile> updatedList = updated.get(os);
 
+                if(updatedList == null) {
+                    updatedList = new ArrayList<>();
+                    updated.put(os, updatedList);
+                }
+
                 if(updatedList.contains(srf))
                     updatedList.remove(srf);
 
