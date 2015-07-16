@@ -55,7 +55,8 @@ public class SerializedObjectImpl<E> implements SerializedObject<E> {
                     : new FileInputStream(path);
 
             object = new ObjectInputStream(stream);
-            return (E) object.readObject();
+
+            return (this.object = (E) object.readObject());
         } catch(Exception e) {
             return (this.object = ifNotFound);
         } finally {
