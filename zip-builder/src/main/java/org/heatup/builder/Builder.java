@@ -59,7 +59,7 @@ public class Builder {
 
         int rWin = -1, rLin = -1, rMac = -1;
 
-        Map<OsCheck.OSType, Long> contents = new HashMap<>();
+        Map<OsCheck.OSType, Map<Integer, Long>> contents = new HashMap<>();
 
         for(Map.Entry<OsCheck.OSType, Release> entry: releases.entrySet()) {
             OsCheck.OSType os = entry.getKey();
@@ -89,9 +89,16 @@ public class Builder {
 
             for (int i = 1; true; i++) {
                 File file = new File(path("releases", os.toString(), i+".zip"));
-                if(file.exists())
-                    contents.put(os, file.length());
-                else break;
+                if(file.exists()) {
+                    Map<Integer, Long> map = contents.get(os);
+
+                    if(map == null)
+                        map = new HashMap<>();
+
+                    map.put(i, file.length());
+                    System.out.println(file.length());
+                    contents.put(os, map);
+                }else break;
             }
         }
 

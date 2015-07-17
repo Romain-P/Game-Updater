@@ -11,8 +11,6 @@ import java.awt.*;
  * Created by romain on 16/05/2015.
  */
 public class Main {
-    public static final String SERVER = "";
-
     public static void main(String[] args) {
         AppUtils.deployingSystemLook();
 

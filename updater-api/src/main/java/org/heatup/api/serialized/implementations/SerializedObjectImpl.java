@@ -29,7 +29,7 @@ public class SerializedObjectImpl<E> implements SerializedObject<E> {
         SerializedObjectImpl<E> object = new SerializedObjectImpl<>();
 
         try {
-            object.set(path, false, o);
+            object.set(path, o);
             object.write();
         } catch(Exception e) {
             e.printStackTrace();
@@ -64,6 +64,13 @@ public class SerializedObjectImpl<E> implements SerializedObject<E> {
                 if(object != null) object.close();
             } catch (IOException e) {}
         }
+    }
+
+    @Override
+    public E set(String path, E replace) {
+        this.path = path;
+        this.object = replace;
+        return null;
     }
 
     @Override

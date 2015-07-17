@@ -1,6 +1,7 @@
 package org.heatup.controllers;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.heatup.api.UI.AppManager;
 import org.heatup.api.controllers.Controller;
 import org.heatup.api.serialized.SerializedObject;
@@ -12,6 +13,7 @@ import org.heatup.utils.AppUtils;
 import org.heatup.utils.FileUtils;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -24,13 +26,14 @@ public class ReleaseController implements Controller {
     private Future<?> future;
     private final SerializedObject<SerializedReleases> serializedReleases;
     @Getter private final SerializedObject<Integer> serializedRelease;
-    @Getter private long updateLength;
+    private long updateLength;
+    private int updateSteps;
 
     public ReleaseController(AppManager manager) {
         this.manager = manager;
         this.files = new LinkedBlockingDeque<>();
-        this.serializedReleases = SerializedObjectImpl.create(UpdateManager.serverHttp, true, null);
-        this.serializedRelease = SerializedObjectImpl.create(FileUtils.path("swtour", "release.int"), false, 0);
+        this.serializedReleases = SerializedObjectImpl.create(UpdateManager.RELEASE, true, null);
+        this.serializedRelease = SerializedObjectImpl.create(FileUtils.path("updates", "release.int"), false, 0);
     }
 
     /**
@@ -41,25 +44,48 @@ public class ReleaseController implements Controller {
         this.future = manager.getWorker().submit(new Runnable() {
             @Override
             public void run() {
+                SerializedReleases releases = serializedReleases.get();
+
                 int release = serializedRelease.get();
-                int serverRelease = serializedReleases.get().lastRelease(AppUtils.OS);
+                int serverRelease = releases.lastRelease(AppUtils.OS);
                 int result = serverRelease - release;
 
-                if(result == 0 || result < 0) {
+                if (result == 0 || result < 0) {
                     manager.getForm().alreadyUpdated();
                     return;
                 }
 
-                for(int i=release+1;i<serverRelease;i++) {
+                Map<Integer, Long> contents = releases.getContents().get(AppUtils.OS);
+
+                for (int i = release + 1; i <= serverRelease; i++) {
                     try {
-                        files.addLast(new URL(
-                                FileUtils.path(Main.SERVER, "releases", AppUtils.OS.toString(), i + ".zip")));
-                    } catch(Exception e) {
+                        synchronized (manager) {
+                            updateLength += contents.get(i);
+                        }
+
+                        synchronized (files) {
+                            updateSteps++;
+                        }
+
+                        files.addLast(new URL(UpdateManager.SERVER+"/releases/"+AppUtils.OS.toString()+"/"+i + ".zip"));
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             }
         });
+    }
+
+    public long getUpdateLength() {
+        synchronized(manager) {
+            return this.updateLength;
+        }
+    }
+
+    public int getUpdateSteps() {
+        synchronized (files) {
+            return this.updateSteps;
+        }
     }
 
     @Override

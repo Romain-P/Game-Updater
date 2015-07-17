@@ -8,6 +8,7 @@ import com.sun.istack.internal.Nullable;
 public interface SerializedObject<E> {
     E get();
     E set(String path, boolean url, @Nullable E ifNotFound);
+    E set(String path, E replace);
     SerializedObject<E> setObject(E object);
     void write();
 }

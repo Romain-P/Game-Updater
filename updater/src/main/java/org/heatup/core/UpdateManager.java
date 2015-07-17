@@ -21,7 +21,8 @@ public class UpdateManager extends AppManager {
     @Getter private final UserInterface form;
     private boolean isEnd;
 
-    public static final String serverHttp = "http://swtour.com/releases/releases.dat";
+    public static final String SERVER = "http://tpe-audition.net";
+    public static final String RELEASE = SERVER+"/releases/releases.dat";
 
     public UpdateManager() {
         this.controllers = new ArrayList<>();

@@ -15,7 +15,7 @@ public final class SerializedReleases implements Serializable {
     private final int windows;
     private final int mac;
     private final int linux;
-    @Getter  private final Map<OsCheck.OSType, Long> contents;
+    @Getter  private final Map<OsCheck.OSType, Map<Integer, Long>> contents;
 
     public int lastRelease(OsCheck.OSType os) {
         switch(os) {
