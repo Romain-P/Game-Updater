@@ -13,8 +13,7 @@ import java.awt.*;
 public class Main {
     public static void main(String[] args) {
         AppUtils.deployingSystemLook();
-
-        //if(AppUtils.requestRights()) return;
+        AppUtils.createShortcuts();
 
         final AppManager manager = new UpdateManager();
 

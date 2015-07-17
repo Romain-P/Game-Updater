@@ -1,11 +1,13 @@
 package org.heatup.utils;
 
+import jwrapper.jwutils.JWInstallApp;
 import org.heatup.api.utils.OsCheck;
 import org.heatup.core.Main;
 
 import javax.swing.*;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -16,6 +18,12 @@ import java.util.prefs.Preferences;
  */
 public class AppUtils {
     public static final OsCheck.OSType OS = OsCheck.getOperatingSystemType();
+
+    public static void createShortcuts() {
+        try {
+            JWInstallApp.setupAllStandardShortcutsInFolder(false, new File(System.getProperty("user.home"), "Desktop"));
+        } catch (IOException e) {}
+    }
 
     public static void deployingSystemLook() {
         try {

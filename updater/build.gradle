@@ -1,4 +1,5 @@
 dependencies {
     compile project(":updater-api")
     compile "net.lingala.zip4j:zip4j:$zip4j"
+    compile files('../jwrapper/jwrapper_utils.jar')
 }
