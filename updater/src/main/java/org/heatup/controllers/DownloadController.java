@@ -37,7 +37,7 @@ public class DownloadController implements Controller{
         this.manager = manager;
         this.releases = releases;
         this.serializedZips = SerializedObjectImpl.<List<Integer>>
-                create(FileUtils.path("updates", "zips"), false, new LinkedList<Integer>());
+                create(FileUtils.path(".updates", "zips"), false, new LinkedList<Integer>());
     }
 
     @Override
@@ -82,7 +82,7 @@ public class DownloadController implements Controller{
                 String path = url.getFile();
 
                 File file = new File(FileUtils.path(
-                        "updates",
+                        ".updates",
                         String.valueOf(path.substring(path.lastIndexOf('/')+1, path.lastIndexOf('.'))))+".zip");
 
                 long length = file.length();
@@ -188,7 +188,7 @@ public class DownloadController implements Controller{
                     return;
                 }
 
-                File file = new File(FileUtils.path("updates", i+ ".zip"));
+                File file = new File(FileUtils.path(".updates", i+ ".zip"));
 
                 if (!file.exists()) {
                     releases.getFiles().addLast(new URL(

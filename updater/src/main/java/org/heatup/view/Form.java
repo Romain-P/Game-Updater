@@ -67,6 +67,11 @@ public class Form extends JFrame implements UserInterface{
     }
 
     @Override
+    public void setVisible(boolean bool) {
+        super.setVisible(bool);
+    }
+
+    @Override
     public void dispose() {
         super.dispose();
     }

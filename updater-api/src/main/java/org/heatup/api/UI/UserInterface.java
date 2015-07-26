@@ -9,6 +9,7 @@ public interface UserInterface {
     void updateTotalPercentage(int percent, String remainingTime, String speed);
     void alreadyUpdated();
     void updateFinished();
+    void setVisible(boolean bool);
 
     void initialize();
     void dispose();

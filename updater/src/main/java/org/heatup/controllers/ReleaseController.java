@@ -33,7 +33,7 @@ public class ReleaseController implements Controller {
         this.manager = manager;
         this.files = new LinkedBlockingDeque<>();
         this.serializedReleases = SerializedObjectImpl.create(UpdateManager.RELEASE, true, null);
-        this.serializedRelease = SerializedObjectImpl.create(FileUtils.path("updates", "release.int"), false, 0);
+        this.serializedRelease = SerializedObjectImpl.create(FileUtils.path(".updates", "release.int"), false, 0);
     }
 
     /**
