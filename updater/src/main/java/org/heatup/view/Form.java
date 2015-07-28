@@ -14,6 +14,7 @@ public class Form extends JFrame implements UserInterface{
     private final UpdateManager manager;
     private final FormContent content;
     private Point mousePointMover;
+    private boolean displayed;
 
     public Form(UpdateManager manager) {
         this.manager = manager;
@@ -37,6 +38,8 @@ public class Form extends JFrame implements UserInterface{
 
         setVisible(true);
         deployMoving();
+
+        displayed = true;
     }
 
     public void updateCurrentPercentage(int percentage, int step, int steps) {
@@ -68,7 +71,7 @@ public class Form extends JFrame implements UserInterface{
 
     @Override
     public void setVisible(boolean bool) {
-        super.setVisible(bool);
+        if(displayed) super.setVisible(bool);
     }
 
     @Override

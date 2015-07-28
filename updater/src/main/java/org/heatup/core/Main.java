@@ -14,21 +14,15 @@ import java.awt.*;
  */
 public class Main {
     public static void main(String[] args) {
-        String arg = args.length > 0 ? "" : args[0];
-
         AppUtils.deployingSystemLook();
-        AppUtils.createShortcuts();
+        new ProcessManager().start();
+    }
 
-        final AppManager manager = new UpdateManager();
+    public static void start(final ProcessManager processManager) {
+        //AppUtils.createShortcuts();
 
-        if(!arg.equals("network")) {
-            ProcessNetwork network = new ProcessNetwork(manager);
-
-            if (!network.isAlreadyLaunched())
-                network.start();
-
-            return;
-        }
+        final AppManager manager = new UpdateManager(processManager);
+        processManager.setManager(manager);
 
         EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -46,6 +40,7 @@ public class Main {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
                 manager.end(true);
+                processManager.stop();
             }
         }));
     }
