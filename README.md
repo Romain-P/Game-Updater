@@ -1,4 +1,4 @@
-Game-Updater
+# Game-Updater
 
 An updater running with zip releases.
 Zip-Builder is the application which search diff between built zip releases and the uncompressed files (which are in a specificate folder) -> checksum
